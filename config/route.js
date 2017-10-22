@@ -5,6 +5,7 @@
 var Index = require('../app/controllers/index');
 var User = require('../app/controllers/user');
 var Movie = require('../app/controllers/movie');
+var Comment = require('../app/controllers/comment');
 module.exports = function (app) {
     /*预处理 回话信息*/
     app.use(function (req,res,next) {
@@ -16,16 +17,21 @@ module.exports = function (app) {
 
 
 //Movie
-    app.get('/admin/movie',Movie.save);
-    app.get('/admin/list',Movie.list);
     app.get('/movie/:id',Movie.detail);
-    app.get('/admin/update/:id',Movie.update);
-    app.post('/admin/movie/new',Movie.new);
-    app.delete('/admin/list',Movie.del);
+    app.get('/admin/movie',User.signinRequired,User.adminRequired,Movie.save);
+    app.get('/admin/movie/list',User.signinRequired,User.adminRequired,Movie.list);
+    app.get('/admin/movie/update/:id',User.signinRequired,User.adminRequired,Movie.update);
+    app.post('/admin/movie/new',User.signinRequired,User.adminRequired,Movie.new);
+    app.delete('/admin/movie/list',User.signinRequired,User.adminRequired,Movie.del);
 
 //User
-    app.get('/user/list',User.list);
+    app.get('/admin/user/list',User.signinRequired,User.adminRequired,User.list);
     app.post('/user/signup',User.signup);
     app.post('/user/signin',User.signin);
+    app.get('/signin',User.showSignin);
+    app.get('/signup',User.showSignup);
     app.get('/logout',User.logout);
+
+//comment
+    app.post('/user/comment',User.signinRequired,Comment.save)
 };

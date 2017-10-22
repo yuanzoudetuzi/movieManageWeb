@@ -1,26 +1,46 @@
 /**
- * Created by Administrator on 2017/10/21.
- * 处理与电影信息有关的交互
+ * Created by Administrator on 2017/10/22.
+ * 处理与评论有关的交互信息
  */
+
 //实现新的对象的字段，替换旧的对象中对应的字段
 var  _ = require('underscore');
-var Movie = require('../models/movie');/*上层目录下*/
-var Comment = require('../models/comment');
+var Comment = require('../models/comment');/*上层目录下*/
+
 //admin page
 exports.save = function (req,res) {
-    res.render('admin',{
-        title:'管理页面',
-        movie:  {
-            title:'',
-            doctor:'',
-            country:'',
-            year:'',
-            poster:'',
-            flash:'',
-            summary:'',
-            language:''
-        }
-    });
+    var _comment = req.body.comment;
+    var movieId = _comment.movie;
+    console.log('comment info:');
+    console.log(_comment);
+    /*判断是不是回复信息*/
+    if(_comment.cid)  {
+        console.log('reply');
+        Comment.findById(_comment.cid,function (err,comment) {
+            var reply = {
+                from:_comment.from,  /*回复评论的人的 ID*/
+                to:_comment.tid,     /*该评论人的ID*/
+                content:_comment.content
+            };
+            comment.reply.push(reply);
+            comment.save(function (err,comment) {
+                if(err) {
+                    console.log(err);
+                } else {
+                    res.redirect('/movie/' + movieId);
+                }
+            });
+        });
+    } else {
+        var comment = new Comment(_comment);
+        comment.save(function (err,comment) {
+            if(err) {
+                console.log(err);
+            } else {
+                res.redirect('/movie/' + movieId);
+            }
+        });
+    }
 };
 
 //list page
@@ -45,24 +65,10 @@ exports.detail  = function (req,res) {
             console.log('detail is failed,err is ' + err);
         } else {
             if(movie) {
-                Comment
-                    .find({movie:id})
-                    .populate('from','name')
-                    .populate('reply.from reply.to','name')
-                    . exec(function (err,comments) {
-                        console.log('comments =');
-                        console.log(comments);
-                        if(err){
-                            console.log(err);
-                        } else {
-                            res.render('detail',{
-                                title:movie.title,
-                                movie:movie,
-                                comments:comments
-                            });
-                    }
+                res.render('detail',{
+                    title:movie.title,
+                    movie:movie
                 });
-
             } else {
                 console.log('The movie is not exist.')
             }

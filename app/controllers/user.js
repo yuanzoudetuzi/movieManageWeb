@@ -16,19 +16,20 @@ exports.signup = function (req,res) {
         }
         if(user){
             console.log('用户名已存在');
-            return res.redirect('/');
-        }
-    });
-    var user = new User(_user);
-
-    user.save(function (err,user) {
-        if(err) {
-            console.log('Signup is failed.Err: ' +err);
+            return res.redirect('/signin');
         } else {
-            /*  console.log('Signup is success.' + user);*/
-            res.redirect('/user/list');
+            var tempUser = new User(_user);
+            tempUser.save(function (err,user) {
+                if(err) {
+                    console.log('Signup is failed.Err: ' +err);
+                    res.redirect('/signup')
+                } else {
+                    res.redirect('/signin');
+                }
+            });
         }
     });
+
 };
 
 /*处理登陆请求*/
@@ -42,7 +43,7 @@ exports.signin = function (req,res) {
         } else {
             if(!user){
                 console.log('用户不存在')
-                return res.redirect('/');
+                return res.redirect('/signup');
             }
             user.comparePassword(_user.password,function (err,isMatched) {
                 if(err){
@@ -54,13 +55,28 @@ exports.signin = function (req,res) {
                         return res.redirect('/');
                     } else {
                         console.log('password is not matched');
-                        return res.redirect('/');
+                        return res.redirect('/signin');
                     }
                 }
             })
         }
     });
 };
+
+/*访问注册页面*/
+exports.showSignup = function (req,res) {
+    res.render('signup',{
+       title:"注册页面"
+    });
+};
+
+/*访问登陆页面*/
+exports.showSignin = function (req,res) {
+    res.render('signin',{
+        title:"登陆页面"
+    });
+};
+
 
 /*处理登出请求*/
 exports.logout = function (req,res) {
@@ -82,4 +98,23 @@ exports.list = function (req,res) {
             });
         }
     });
+};
+
+/*midware for user*/
+exports.signinRequired = function (req,res,next) {
+    var user = req.session.user;
+    console.log('user = ' );
+    console.log(user);
+    if(!user) {
+       return res.redirect('/signin');
+    }
+    next();
+};
+
+exports.adminRequired = function (req,res,next) {
+    var user = req.session.user;
+    if(user.role<=10) {
+       return res.redirect('/signin');
+    }
+    next();
 };
