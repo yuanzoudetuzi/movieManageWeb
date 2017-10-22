@@ -4,7 +4,21 @@
  */
 //index page
 var Movie = require('../models/movie'); /*上层目录下*/
+var Category = require('../models/category');
 exports.index = function (req,res) {
+    Category
+        .find()
+        .populate({path:'movies',options:{limit:5}})
+        .exec(function (err,categories) {
+            if(err) {
+                console.log(err);
+            } else {
+               res.render('index',{
+                    title:'电影网',
+                    categories:categories
+               });
+            }
+        });
     /*console.log('user in session :');
      if(req.session.user) {
      app.locals.user = req.session.user;

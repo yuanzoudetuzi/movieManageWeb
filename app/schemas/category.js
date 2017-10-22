@@ -1,22 +1,17 @@
 /**
- * Created by Administrator on 2017/10/17.
+ * Created by Administrator on 2017/10/22.
+ * 分类模式
  */
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ObjectId = Schema.Types.ObjectId;
-var MovieSchema = new Schema({
-    category:{
+
+var CategorySchema = new Schema({
+    name:String,
+    movies:[{
         type:ObjectId,
-        rel:'Category'
-    },
-    doctor:String,
-    title:String,
-    language:String,
-    country:String,
-    summary:String,
-    flash:String,
-    poster:String,
-    year:Number,
+        ref:'Movie'
+    }],
     meta:{
         creatAt:{
             type:Date,
@@ -29,7 +24,7 @@ var MovieSchema = new Schema({
     }
 });
 
-MovieSchema.pre('save',function (next) {
+CategorySchema.pre('save',function (next) {
     if(this.isNew) {
         this.meta.creatAt = this.meta.updateAt = Date.now();
     } else {
@@ -38,7 +33,7 @@ MovieSchema.pre('save',function (next) {
     next();
 });
 
-MovieSchema.statics = {
+CategorySchema.statics = {
     fetch:function (cb) {
         return this
             .find({})
@@ -52,4 +47,4 @@ MovieSchema.statics = {
     }
 }
 
-module.exports = MovieSchema;
+module.exports = CategorySchema;
