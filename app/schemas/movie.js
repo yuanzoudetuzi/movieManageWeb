@@ -7,7 +7,7 @@ var ObjectId = Schema.Types.ObjectId;
 var MovieSchema = new Schema({
     category:{
         type:ObjectId,
-        rel:'Category'
+        ref:'Category'
     },
     doctor:String,
     title:String,

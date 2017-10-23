@@ -6,21 +6,26 @@
 var  _ = require('underscore');
 var Movie = require('../models/movie');/*上层目录下*/
 var Comment = require('../models/comment');
+var Category = require('../models/category');
 //admin page
 exports.save = function (req,res) {
-    res.render('admin',{
-        title:'管理页面',
-        movie:  {
-            title:'',
-            doctor:'',
-            country:'',
-            year:'',
-            poster:'',
-            flash:'',
-            summary:'',
-            language:''
-        }
-    });
+    Category.find({},function (err,categories) {
+        res.render('admin',{
+            title:'电影管理页面',
+            categories:categories,
+            movie:  {
+                title:'',
+                doctor:'',
+                country:'',
+                year:'',
+                poster:'',
+                flash:'',
+                summary:'',
+                language:''
+            }
+        });
+    })
+
 };
 
 //list page
@@ -77,14 +82,22 @@ exports.update = function (req,res) {
     var id = req.params.id;
     if(id) {
         Movie.findById(id,function (err,movie) {
-            if(err) {
-                console.log('更新失败，ERR:' + err);
-            } else {
-                res.render('admin',{
-                    title:'更新页面',
-                    movie:movie
-                });
+            if (err) {
+                console.log(err);
+                return;
             }
+            Category.find({},function (err,categories) {
+                if(err) {
+                    console.log(err);
+                } else {
+                    res.render('admin',{
+                        title:'更新页面',
+                        movie:movie,
+                        categories:categories
+                    });
+                }
+            });
+
         })
     }
 };
@@ -93,7 +106,8 @@ exports.update = function (req,res) {
 exports.new = function (req,res) {
     var id = req.body.movie._id;
     var movieObject = req.body.movie;
-    /*  console.log('movie id = ' + id + " ,movie = " + movieObject.title);*/
+    console.log('movie = ');
+    console.log(movieObject);
     var _movie;
     if(id) {
         Movie.findById(id,function (err,movie) {
@@ -105,7 +119,7 @@ exports.new = function (req,res) {
                 _movie.save(_movie,function (err,movie) {
                     if(err) {
                         console.log('保存数据失败。ERR:' + err)
-                        res.redirect('/admin/movie');
+                       return res.redirect('/admin/movie');
                     }
                     res.redirect('/movie/' + movie._id);
                 });
@@ -113,23 +127,27 @@ exports.new = function (req,res) {
 
         })
     } else {
-        _movie = new Movie({
-                doctor: movieObject.doctor,
-                title: movieObject.title,
-                country: movieObject.country,
-                language: movieObject.language,
-                year: movieObject.year,
-                poster:movieObject.poster,
-                summary:movieObject.summary,
-                flash:movieObject.flash
-            }
-        );
+        _movie = new Movie(movieObject);
+        var categoryId = _movie.category;
         _movie.save(_movie,function (err,movie) {
             if(err) {
                 console.log('保存数据失败。ERR:' + err);
+            } else {
+                /*在对应的分类中存入该电影*/
+                Category.findById(categoryId,function (err,category) {
+                    if(err) {
+                        console.log(err);
+                        res.redirect('/');
+                    } else {
+                        category.movies.push(movie._id);
+                        category.save(function (err,category) {
+                            res.redirect('/movie/' + movie._id);
+                        })
+                    }
+                });
+
             }
-            console.log('_id = ' + movie._id);
-            res.redirect('/movie/' + movie._id);
+
         });
     }
 

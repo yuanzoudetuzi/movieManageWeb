@@ -2,7 +2,7 @@ extends ../layout
 block content
     .container
        .row
-           if categories && categories.length > 0
+           if (categories && categories.length > 0)
                each cat in categories
                    .panel.panel-primary
                        .panel-heading
