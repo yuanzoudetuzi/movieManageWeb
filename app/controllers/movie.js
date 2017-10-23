@@ -104,10 +104,10 @@ exports.update = function (req,res) {
 
 //处理录制信息
 exports.new = function (req,res) {
-    var id = req.body.movie._id;
     var movieObject = req.body.movie;
-    console.log('movie = ');
-    console.log(movieObject);
+    var id = movieObject._id;
+    var categoryId = movieObject.category;
+    var categoryName =movieObject.categoryName;
     var _movie;
     if(id) {
         Movie.findById(id,function (err,movie) {
@@ -125,32 +125,53 @@ exports.new = function (req,res) {
                 });
             }
 
-        })
+        });
     } else {
         _movie = new Movie(movieObject);
-        var categoryId = _movie.category;
         _movie.save(_movie,function (err,movie) {
             if(err) {
                 console.log('保存数据失败。ERR:' + err);
             } else {
                 /*在对应的分类中存入该电影*/
-                Category.findById(categoryId,function (err,category) {
-                    if(err) {
-                        console.log(err);
-                        res.redirect('/');
-                    } else {
-                        category.movies.push(movie._id);
-                        category.save(function (err,category) {
-                            res.redirect('/movie/' + movie._id);
-                        })
-                    }
-                });
+                if(categoryId) {      /*category 标签被选择时*/
+                    Category.findById(categoryId,function (err,category) {
+                        if(err) {
+                            console.log(err);
+                            return res.redirect('/admin/movie');
+                        } else {
+                            category.movies.push(movie._id);
+                            category.save(function (err,category) {
+                                if(err){
+                                    return res.redirect('/admin/movie');
+                                }
+                                res.redirect('/movie/' + movie._id);
+                            })
+                        }
+                    });
+                } else if(categoryName){    /*新增了一个类*/
+                     var category = new Category({
+                         name:categoryName,
+                         movies:[movie._id]
+                     });
+                     category.save(function (err,category) {
+                         if(err){
+                             console.log(err);
+                             return res.redirect('/admin/movie');
+                         }
+                         /*保存movie的分类*/
+                         movie.category = category._id;
+                         movie.save(function (err,mo) {
+                             if(err){
+                                 return res.redirect('/admin/movie');
+                             }
+                             res.redirect('/movie/' + mo._id)
+                         });
 
+                     });
+                }
             }
-
         });
     }
-
 };
 
 /*处理删除请求*/

@@ -1,6 +1,7 @@
 /**
  * Created by Administrator on 2017/10/19.
  * 处理删除movie
+ * 豆瓣同步
  */
 $(function () {
     $('.del').click(function (e) {
@@ -19,6 +20,29 @@ $(function () {
 
             }
         });
+    });
+    $('#douban').blur(function () {
+        var douban = $(this);
+        console.log('blur');
+        var id = douban.val();
+        if(id){
+            $.ajax({
+                url:"https://api.douban.com/v2/movie/subject/" + id,
+                cache:true,
+                type:'get',
+                dataType:'jsonp',
+                crossDomain:true,
+                jsonp:'callback',
+                success:function (data) {
+                    $('#inputTitle').val(data.title);
+                    $('#inputDoctor').val(data.directors[0].name);
+                    $('#inputCountry').val(data.countries[0]);
+                    $('#inputPoster').val(data.images.large);
+                    $('#inputYear').val(data.year);
+                    $('#inputSummary').val(data.summary);
+                }
+            });
+        }
     });
 });
 
