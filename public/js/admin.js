@@ -10,7 +10,7 @@ $(function () {
         var tr = $('.item-id-'+id);
         $.ajax({
             type:'DELETE',
-            url:'/admin/list?id='+id,
+            url:'/admin/movie/list?id='+id,
             success:function (res) {
                 if(res.success ===1) {
                     if(tr.length >0) {

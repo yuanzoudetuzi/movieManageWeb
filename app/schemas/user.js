@@ -20,7 +20,7 @@ var UserSchema = new mongoose.Schema({
     * */
     role:{
        type: Number,
-        default:11
+        default:0
     },
     meta:{
         creatAt:{

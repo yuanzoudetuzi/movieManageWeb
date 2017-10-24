@@ -7,8 +7,10 @@ var  _ = require('underscore');
 var Movie = require('../models/movie');/*上层目录下*/
 var Comment = require('../models/comment');
 var Category = require('../models/category');
+var fs = require('fs');
+var path = require('path');
 //admin page
-exports.save = function (req,res) {
+exports.new = function (req,res) {
     Category.find({},function (err,categories) {
         res.render('admin',{
             title:'电影管理页面',
@@ -45,6 +47,11 @@ exports.list = function (req,res) {
 //detail page
 exports.detail  = function (req,res) {
     var id = req.params.id;
+    Movie.update({_id:id},{$inc:{pv:1}},function (err,movie) {
+        if(err) {
+            console.log(err);
+        }
+    });
     Movie.findById(id,function (err,movie) {
         if(err) {
             console.log('detail is failed,err is ' + err);
@@ -102,13 +109,42 @@ exports.update = function (req,res) {
     }
 };
 
+//存储海报
+exports.savePoster = function (req,res,next) {
+
+     console.log('files.movie= ');
+     console.log(req.files.movie);
+    var posterData = req.files.movie.uploadPoster;
+     var filePath = posterData.path;
+     var originalFileName = posterData.originalFilename;
+
+     if(originalFileName) {   /*如果上传了这个文件*/
+          fs.readFile(filePath,function (err,data) {
+                var timestamp = Date.now();
+                var type = posterData.type.split('/')[1];
+                var poster = timestamp + '.' + type;
+                var newPath = path.join(__dirname,'../../','/public/upload/' + poster);
+                fs.writeFile(newPath,data,function (err) {
+                    req.poster = poster;  /*将心的poster挂在req上*/
+                    next();
+                });
+          });
+     } else {
+         next();
+     }
+};
+
 //处理录制信息
-exports.new = function (req,res) {
+exports.save = function (req,res) {
     var movieObject = req.body.movie;
     var id = movieObject._id;
     var categoryId = movieObject.category;
     var categoryName =movieObject.categoryName;
     var _movie;
+    if(req.poster) {   /*如果上传了海报，选择上传的海报*/
+        movieObject.poster = '/upload/' + req.poster;
+        console.log('poster = ' +  movieObject.poster)
+    }
     if(id) {
         Movie.findById(id,function (err,movie) {
             //更新数据库中的值

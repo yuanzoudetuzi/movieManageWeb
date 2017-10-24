@@ -10,10 +10,29 @@ var session = require('express-session');
 var mongoose = require('mongoose');
 var mongoStore = require('connect-mongo')(session);
 var logger = require('morgan');
+var connectMultiparty = require('connect-multiparty'); /*处理multipart/formd-data类型的数据*/
+var fs = require('fs');
 var app = express();
 var port = process.env.PORT || 8000;
 app.locals.moment = require('moment');
 
+var models_path = __dirname + "/app/models";
+/*var walk = function (path) {
+    fs
+        .readirSync(path)
+        .forEach(function (file) {
+            var newPath = path + '/' +file;
+            var stat = fs.statSync(newPath);
+            if(stat.isFile()) {
+                if(/(.*)\.(js|coffee)/.test(file)) {
+                    require(newPath);
+                }
+            } else if(stat.isDirectory()) {
+                walk(newPath);
+            }
+        });
+};
+walk(models_path);*/
 //设置视图文件地址
 app.set('views','./app/views/pages');
 // 设置模板引擎
@@ -24,6 +43,7 @@ app.use(express.static(path.join(__dirname,'public')));
 app.use(bodyParser.urlencoded({extended: true}));
 /*解析cookie中的session-id*/
 app.use(cookieParser());
+app.use(connectMultiparty());
 // 设置 session 的可选参数
 var dbUrl = 'mongodb://localhost/movie';
 app.use(session({
