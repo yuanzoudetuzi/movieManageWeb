@@ -43,7 +43,7 @@ module.exports = function (grunt) {
                     ignore: ['README.md', 'node_modules/**', '.DS_Store'],
                     ext: 'js',
                     watch: ['./'],
-                    delay: 1000,
+                    delay: 500,
                     env: {
                         PORT: '8000'
                     },

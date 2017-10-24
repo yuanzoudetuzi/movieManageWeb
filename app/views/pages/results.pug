@@ -14,7 +14,7 @@ block content
                                 .caption
                                     h3 #{item.title}
                                     p: a.btn.btn-primary(href="/movie/" + item._id,role="button") 观看预告片
-            ul.pagination
+            ul.pagination(style="margin-bottom:100px")
                 -for(var i = 0; i < totalPage; i++)
                 if(currentPage==(i+1))
                     li.active
