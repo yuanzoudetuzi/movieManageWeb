@@ -23,3 +23,34 @@ exports.index = function (req,res) {
         });
 };
 
+exports.search = function (req,res) {
+    var catId = req.query.cat;
+    console.log('catId = ' + catId);
+    var page = parseInt(req.query.p);
+    var count = 2;
+    var index = page*count;
+    Category
+        .find({_id:catId})
+        .populate({
+            path:'movies'
+        })
+        .exec(function (err,categories) {
+            if(err) {
+                console.log(err);
+                return  res.redirect('/');
+            } else {
+                var category = categories[0] || {};
+                var movies = category.movies || [];
+                var results = movies.slice(index,index+count);
+                var keyword = category.name;
+                res.render('results',{
+                    title:'结果列表页面',
+                    keyword:keyword,
+                    currentPage:(page+1),
+                    query:"cat=" + category._id,
+                    totalPage:Math.ceil(movies.lenght/count),
+                    results:results
+                });
+            }
+        });
+};
