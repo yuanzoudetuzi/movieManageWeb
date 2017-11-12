@@ -54,7 +54,6 @@ app.use(session({
     store:new mongoStore({  /*指定session存储方式*/
         url: dbUrl,
         collection:'sessions'
-
     })
 }));
 

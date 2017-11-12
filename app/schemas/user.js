@@ -87,6 +87,6 @@ UserSchema.statics = {
             .findOne({_id:id})
             .exec(cb)
     }
-}
+};
 
 module.exports = UserSchema;

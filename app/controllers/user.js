@@ -50,8 +50,8 @@ exports.signin = function (req,res) {
                     console.log(err);
                 } else {
                     if(isMatched){
-                        req.session.user = user;
                         console.log('password is matched');
+                        req.session.user = user;
                         return res.redirect('/');
                     } else {
                         console.log('password is not matched');

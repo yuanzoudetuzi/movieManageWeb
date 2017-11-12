@@ -94,4 +94,9 @@ describe('<Unit Test',function () {
 
         });
     });
+    
+    after(function (done) {
+        //clear user info
+        done();
+    });
 });
